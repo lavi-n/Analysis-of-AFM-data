@@ -1,0 +1,164 @@
+import csv
+import sys
+import math as ma
+choice = eval(input('''Choose one of the following options: 
+                    1. Height information and average roughness from AFM data 
+                    2. Average height profile from AFM data 
+                    3. Height profile along any direction from AFM data 
+                    4. To generate height-height difference function: g(r) from AFM data 
+                    5. To fit height-height corelation function \n'''))
+print("Give normalising factor for x, y and z (in nm): ")
+ax = float(input())
+ay = float(input())
+az = float(input())
+datapoints = 25
+
+with open(r"C:\Users\Admin\Downloads\data.txt", 'r') as f: #opening file as string
+    l = [[str(num) for num in line.split(';')] for line in f]
+f.close()
+list1=[]
+for i in range(0,len(l)): #removing \n
+    list1=list1 + [l[i][0].split('\n')]
+for i in range(0,len(list1)): #separating num in str
+    for j in list1[i]:
+        list1[i] = j.split(" ")
+list2 = []
+for i in range(0, len(list1)): #str to int
+    list2 = list2 + [[int(i) for i in list1[i]]]
+for i in range(0, len(list2)): #az multiplication
+    for j in range(0, len(list2)):
+        list2[i][j] = list2[i][j]*az
+if choice == 1:
+    flat_list = [] #flat list
+    for element in list2:
+            if type(element) is list:
+                for item in element:
+                    flat_list.append(item)
+            else:
+                flat_list.append(element)
+    minval=min(flat_list) #min. value in list
+    list3 = []
+    for i in range(0, len(flat_list)):
+        xx = flat_list[i]-minval
+        list3 = list3 + [xx] #dif
+    avgrough=sum(list3)/datapoints
+    print("Average roughness: ", avgrough)
+    sum1 = 0
+    for i in range(0, len(list3)):
+        xx = list3[i]-avgrough
+        sum1 = sum1 + xx**2
+    rmsrough=((sum1/datapoints)**(1/2)) #rms
+    print("RMS roughness: ", rmsrough)
+    datalist = []
+    datalist = list(set(list3)) #Data-points
+    print(datalist)
+    numlist = []
+    numlist2 = []
+    for i in range(0,len(datalist)):
+        numlist= numlist + [[datalist[i], list3.count(datalist[i])]]
+        numlist2 = numlist2 + [list3.count(datalist[i])]
+    for i in range(0,len(numlist)):
+        print(numlist[i][0],numlist[i][1])
+        with open('text.csv', 'w', newline='') as g:
+            csv_app = csv.writer(g, delimiter=',')
+            for one, two in zip(datalist, numlist2):
+                csv_app.writerow([one, None, two])
+elif choice == 2:
+    sum2 = 0
+    listiplus1=[]
+    columnavg = []
+    for i in range(0,len(list2)): #columnwise average
+        for j in range(0,len(list2[i])):
+            sum2 = sum2 + list2[i][j]
+        listiplus1 = listiplus1 + [i+1]  
+        columnavg = columnavg + [sum2/(datapoints**(1/2))]
+        print(i+1, sum2/(datapoints**(1/2)))
+        with open('text.csv', 'w', newline='') as h:
+            csv_app = csv.writer(h, delimiter=',')
+            for three, four in zip(listiplus1, columnavg):
+                csv_app.writerow([three, None, four])
+elif choice == 3:
+    print('''Enter choice for height
+      1. Along diagonal
+      2. Along row
+      3. Along column''')
+    choice2 = int(input())
+    if choice2 == 1:
+        listx = []
+        for i in range(0,len(list2)): #diagonal
+            for j in range(0,len(list2[i])):
+                if i == j:
+                    listx = listx + [list2[i][j]]
+                    with open('text.csv', 'w', newline='') as k:
+                        csv_app = csv.writer(k, delimiter=',')
+                        for five in zip(listx):
+                            csv_app.writerow(five)        
+        print("List of all diagonals: ")
+        print(listx)
+                    
+    elif choice2 == 2: 
+        print("Enter row number: ") #row
+        choice3 = int(input())
+        listx = []
+        print("Elemnts in row ", choice3, " : ")
+        for i in range(0,len(list2[choice3])):
+            print(list2[choice3-1][i])
+            listx = listx + [list2[choice3-1][i]]
+            with open('text.csv', 'w', newline='') as k:
+                csv_app = csv.writer(k, delimiter=',')
+                for five in zip(listx):
+                    csv_app.writerow(five)
+    elif choice2 == 3:
+        print("Enter column numnber: ") #column
+        choice4 = int(input()) 
+        listx = []
+        print("Elemnts in column ", choice4, " : ")
+        for i in range(0, len(list2)):
+            print(list2[i][choice4-1])
+            listx = listx + [list2[i][choice4-1]]
+            with open('text.csv', 'w', newline='') as k:
+                csv_app = csv.writer(k, delimiter=',')
+                for five in zip(listx):
+                    csv_app.writerow(five)
+    else:
+        print("Invalid input")
+elif choice == 4:
+    cdlist = []
+    ablist = []
+    print("Values: ")
+    for m in range(1,len(list2)):
+        sum3 = 0
+        for i in range(0,len(list2)):
+            for j in range(0,len(list2)-m):
+                f1 = list2[i][j+m]
+                f2 = list2[i][j]
+                sum3 = sum3 + (f1-f2)**2
+        ab = sum3/(len(list2)*(len(list2)-m))
+        ablist = ablist + [ab]
+        cd = m*ax
+        cdlist = cdlist + [cd]
+        print(ab, ",", cd)
+        with open('text.csv', 'w', newline='') as m:
+            csv_app = csv.writer(m, delimiter=',')
+            for one, two in zip(ablist, cdlist):
+                csv_app.writerow([one, None, two])
+elif choice == 5:
+    list5 = []
+    rlist = []
+    dumlist = []
+    hertz=float(input("Enter hertz parameter (0-1)"))
+    xhi = float(input("Enter lateral corelation length (in nm)"))
+    sigma = float(input("Give surface roughness (in nm)"))
+    for r in range(0,20001,25):
+        dum = (2*(sigma**2))*(1-ma.exp(-(r/xhi)**(2*hertz)))
+        rlist = rlist + [r]
+        dumlist = dumlist + [dum]
+        list5 = list5 + [[r,dum]]
+    with open('text.csv', 'w', newline='') as n:
+        csv_app = csv.writer(n, delimiter=',')
+        for one, two in zip(rlist, dumlist):
+            csv_app.writerow([one, None, two])
+    print(list5)
+else:
+    print("Invalid input")
+    
