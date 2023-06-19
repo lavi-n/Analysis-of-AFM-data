@@ -6,12 +6,12 @@ choice = eval(input('''Choose one of the following options:
                     2. Average height profile from AFM data 
                     3. Height profile along any direction from AFM data 
                     4. To generate height-height difference function: g(r) from AFM data 
-                    5. To fit height-height corelation function \n'''))
+                    5. To fit height-height correlation function \n'''))
 print("Give normalising factor for x, y and z (in nm): ")
 ax = float(input())
 ay = float(input())
 az = float(input())
-datapoints = 25
+datapoints = 65536
 
 with open(r"C:\Users\Admin\Downloads\data.txt", 'r') as f: #opening file as string
     l = [[str(num) for num in line.split(';')] for line in f]
